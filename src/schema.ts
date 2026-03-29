@@ -17,5 +17,6 @@ export type Card = z.infer<typeof CardSchema>;
 export type FlashcardSet = z.infer<typeof FlashcardSetSchema>;
 
 export interface StoredFlashcardSet extends FlashcardSet {
+  id: string;
   learnedCardIds: string[];
 }

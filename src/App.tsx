@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FlashcardSetSchema } from "./schema";
 import type { StoredFlashcardSet } from "./schema";
 import { loadSets, addSet, deleteSet, markCardLearned, markCardNotLearned, resetDeck } from "./storage";
@@ -7,10 +7,29 @@ import DeckList from "./DeckList";
 import StudyView from "./StudyView";
 import "./App.css";
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+function getDeckIdFromUrl(): string | null {
+  const path = window.location.pathname.replace(BASE, "").replace(/^\//, "");
+  return path || null;
+}
+
 export default function App() {
   const [sets, setSets] = useState<StoredFlashcardSet[]>(loadSets);
-  const [studyingIndex, setStudyingIndex] = useState<number | null>(null);
+  const [activeDeckId, setActiveDeckId] = useState<string | null>(getDeckIdFromUrl);
   const [showImport, setShowImport] = useState(false);
+
+  const navigateTo = useCallback((deckId: string | null) => {
+    setActiveDeckId(deckId);
+    const url = deckId ? `${BASE}/${deckId}` : `${BASE}/`;
+    window.history.pushState(null, "", url);
+  }, []);
+
+  useEffect(() => {
+    const onPopState = () => setActiveDeckId(getDeckIdFromUrl());
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   function handleImport(json: string): string | null {
     let parsed: unknown;
@@ -37,33 +56,36 @@ export default function App() {
     setSets(updated);
   }
 
+  const studyingIndex = activeDeckId !== null ? sets.findIndex((s) => s.id === activeDeckId) : -1;
+  const studyingSet = studyingIndex >= 0 ? sets[studyingIndex] : null;
+
   function handleMarkLearned(cardId: string) {
-    if (studyingIndex === null) return;
+    if (studyingIndex < 0) return;
     const updated = markCardLearned(studyingIndex, cardId);
     setSets(updated);
   }
 
   function handleMarkNotLearned(cardId: string) {
-    if (studyingIndex === null) return;
+    if (studyingIndex < 0) return;
     const updated = markCardNotLearned(studyingIndex, cardId);
     setSets(updated);
   }
 
   function handleReset() {
-    if (studyingIndex === null) return;
+    if (studyingIndex < 0) return;
     const updated = resetDeck(studyingIndex);
     setSets(updated);
   }
 
-  if (studyingIndex !== null && sets[studyingIndex]) {
+  if (studyingSet) {
     return (
       <div className="app study-mode">
         <StudyView
-          set={sets[studyingIndex]}
+          set={studyingSet}
           onMarkLearned={handleMarkLearned}
           onMarkNotLearned={handleMarkNotLearned}
           onReset={handleReset}
-          onBack={() => setStudyingIndex(null)}
+          onBack={() => navigateTo(null)}
         />
       </div>
     );
@@ -77,7 +99,11 @@ export default function App() {
           + Import Deck
         </button>
       </div>
-      <DeckList sets={sets} onSelect={setStudyingIndex} onDelete={handleDelete} onImport={() => setShowImport(true)} />
+      <DeckList sets={sets} onSelect={(i) => navigateTo(sets[i].id)} onDelete={handleDelete} onImport={() => setShowImport(true)} />
+
+      <footer className="app-footer">
+        Data is stored in your browser's local storage. It won't sync across devices or persist if you clear your browser data.
+      </footer>
 
       {showImport && (
         <div className="modal-overlay" onClick={() => setShowImport(false)}>

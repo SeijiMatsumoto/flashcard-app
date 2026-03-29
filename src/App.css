@@ -461,6 +461,16 @@
   color: var(--text);
 }
 
+/* Footer */
+.app-footer {
+  margin-top: 48px;
+  padding: 16px 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.5;
+}
+
 .completed {
   text-align: center;
   margin-top: 60px;
