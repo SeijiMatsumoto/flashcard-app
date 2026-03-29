@@ -4,10 +4,20 @@ interface Props {
   sets: StoredFlashcardSet[];
   onSelect: (index: number) => void;
   onDelete: (index: number) => void;
+  onImport: () => void;
 }
 
-export default function DeckList({ sets, onSelect, onDelete }: Props) {
-  if (sets.length === 0) return null;
+export default function DeckList({ sets, onSelect, onDelete, onImport }: Props) {
+  if (sets.length === 0) {
+    return (
+      <div className="empty-state">
+        <p>No decks yet</p>
+        <button className="btn primary" onClick={onImport}>
+          + Import Your First Deck
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="deck-list">

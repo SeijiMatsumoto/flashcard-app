@@ -10,6 +10,7 @@ import "./App.css";
 export default function App() {
   const [sets, setSets] = useState<StoredFlashcardSet[]>(loadSets);
   const [studyingIndex, setStudyingIndex] = useState<number | null>(null);
+  const [showImport, setShowImport] = useState(false);
 
   function handleImport(json: string): string | null {
     let parsed: unknown;
@@ -27,6 +28,7 @@ export default function App() {
 
     const updated = addSet(result.data);
     setSets(updated);
+    setShowImport(false);
     return null;
   }
 
@@ -55,7 +57,7 @@ export default function App() {
 
   if (studyingIndex !== null && sets[studyingIndex]) {
     return (
-      <div className="app">
+      <div className="app study-mode">
         <StudyView
           set={sets[studyingIndex]}
           onMarkLearned={handleMarkLearned}
@@ -69,9 +71,27 @@ export default function App() {
 
   return (
     <div className="app">
-      <h1>Flashcard App</h1>
-      <ImportView onImport={handleImport} />
-      <DeckList sets={sets} onSelect={setStudyingIndex} onDelete={handleDelete} />
+      <div className="home-header">
+        <h1>Flashcard App</h1>
+        <button className="btn primary add-deck-btn" onClick={() => setShowImport(true)}>
+          + Import Deck
+        </button>
+      </div>
+      <DeckList sets={sets} onSelect={setStudyingIndex} onDelete={handleDelete} onImport={() => setShowImport(true)} />
+
+      {showImport && (
+        <div className="modal-overlay" onClick={() => setShowImport(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Import Deck</h2>
+              <button className="btn modal-close" onClick={() => setShowImport(false)}>
+                &times;
+              </button>
+            </div>
+            <ImportView onImport={handleImport} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

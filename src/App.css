@@ -1,13 +1,70 @@
 .app {
-  max-width: 700px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
-.app > h1 {
-  text-align: center;
+.app.study-mode {
+  max-width: 700px;
+}
+
+.home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.home-header h1 {
   color: var(--text-h);
   font-size: 2rem;
-  margin-bottom: 32px;
+  margin: 0;
+}
+
+.btn.add-deck-btn {
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 24px;
+  width: 90%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  color: var(--text-h);
+  margin: 0;
+}
+
+.btn.modal-close {
+  background: transparent;
+  color: var(--text);
+  font-size: 1.5rem;
+  padding: 4px 10px;
+  line-height: 1;
 }
 
 /* Buttons */
@@ -27,9 +84,13 @@
 .btn.primary {
   background: var(--accent);
   color: white;
-  width: 100%;
   padding: 12px;
   font-size: 1rem;
+}
+
+.import-view .btn.primary,
+.completed .btn.primary {
+  width: 100%;
 }
 .btn.primary:hover {
   background: var(--accent-hover);
@@ -74,6 +135,8 @@
   color: var(--red);
   font-size: 0.85rem;
   padding: 6px 12px;
+  align-self: flex-end;
+  margin-top: 8px;
 }
 .btn.delete-btn:hover {
   background: rgba(252, 129, 129, 0.1);
@@ -89,12 +152,7 @@
 
 /* Import View */
 .import-view {
-  margin-bottom: 40px;
-}
-
-.import-view h2 {
-  color: var(--text-h);
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .drop-zone {
@@ -163,6 +221,22 @@
   text-align: left;
 }
 
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--text);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.empty-state .btn.primary {
+  width: auto;
+}
+
 /* Deck List */
 .deck-list {
   margin-top: 8px;
@@ -173,8 +247,8 @@
 }
 
 .decks {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 12px;
 }
 
@@ -184,8 +258,8 @@
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.1s;
   box-shadow: var(--shadow);

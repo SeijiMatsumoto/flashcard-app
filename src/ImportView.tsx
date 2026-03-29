@@ -69,7 +69,6 @@ export default function ImportView({ onImport }: Props) {
 
   return (
     <div className="import-view">
-      <h2>Import Flashcard Set</h2>
       <div
         className={`drop-zone ${dragging ? "dragging" : ""}`}
         onDragOver={(e) => {
