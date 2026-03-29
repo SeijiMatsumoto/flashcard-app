@@ -74,6 +74,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   function handleLearned() {
     if (animating) return;
+    setFlipped(false);
     setFlash("learned");
     setTimeout(() => {
       animateSlide("slide-up", () => {
@@ -88,6 +89,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   function handleNotLearned() {
     if (animating) return;
+    setFlipped(false);
     setFlash("not-learned");
     setMarkedNotLearned((prev) => new Set(prev).add(card.id));
     setTimeout(() => {
