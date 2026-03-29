@@ -359,8 +359,13 @@
   box-shadow: var(--shadow);
   transition: background 0.2s, transform 0.1s;
 }
-.btn.nav-arrow:hover {
+.btn.nav-arrow:hover:not(:disabled) {
   background: var(--border);
+}
+
+.btn.nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 /* Flashcard */
@@ -397,12 +402,64 @@
   padding: 32px;
   border-radius: 16px;
   background: var(--card-bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   box-shadow: var(--shadow-lg);
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .flashcard-back {
   transform: rotateY(180deg);
+}
+
+.flashcard.flash-learned .flashcard-front,
+.flashcard.flash-learned .flashcard-back {
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(72, 187, 120, 0.4);
+}
+
+.flashcard.flash-not-learned .flashcard-front,
+.flashcard.flash-not-learned .flashcard-back {
+  border-color: var(--red);
+  box-shadow: 0 0 20px rgba(252, 129, 129, 0.4);
+}
+
+.flashcard.marked-not-learned .flashcard-front,
+.flashcard.marked-not-learned .flashcard-back {
+  border-color: var(--red);
+}
+
+/* Slide animations */
+.flashcard.slide-left {
+  animation: slideLeft 0.25s ease-in forwards;
+}
+
+.flashcard.slide-right {
+  animation: slideRight 0.25s ease-in forwards;
+}
+
+.flashcard.slide-up {
+  animation: slideUp 0.25s ease-in forwards;
+}
+
+@keyframes slideLeft {
+  to {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideRight {
+  to {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  to {
+    transform: translateY(-80%);
+    opacity: 0;
+  }
 }
 
 .card-label {

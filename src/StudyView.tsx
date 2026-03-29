@@ -13,6 +13,9 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   const unlearnedCards = set.cards.filter((c) => !set.learnedCardIds.includes(c.id));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [flash, setFlash] = useState<"learned" | "not-learned" | null>(null);
+  const [slide, setSlide] = useState<"slide-left" | "slide-right" | "slide-up" | null>(null);
+  const [markedNotLearned, setMarkedNotLearned] = useState<Set<string>>(new Set());
 
   const totalCards = set.cards.length;
   const learnedCount = set.learnedCardIds.length;
@@ -39,28 +42,59 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   const safeIndex = currentIndex >= unlearnedCards.length ? 0 : currentIndex;
   const card = unlearnedCards[safeIndex];
 
+  const animating = slide !== null || flash !== null;
+
+  function animateSlide(direction: "slide-left" | "slide-right" | "slide-up", then: () => void) {
+    setSlide(direction);
+    setTimeout(() => {
+      then();
+      setFlipped(false);
+      setSlide(null);
+    }, 250);
+  }
+
+  const isFirst = safeIndex === 0;
+  const isLast = safeIndex >= unlearnedCards.length - 1;
+
   function prev() {
-    setFlipped(false);
-    setCurrentIndex((i) => (i - 1 < 0 ? unlearnedCards.length - 1 : i - 1));
+    if (animating || isFirst) return;
+    animateSlide("slide-right", () => {
+      setCurrentIndex((i) => i - 1);
+    });
   }
 
   function next() {
-    setFlipped(false);
-    setCurrentIndex((i) => (i + 1 >= unlearnedCards.length ? 0 : i + 1));
+    if (animating || isLast) return;
+    animateSlide("slide-left", () => {
+      setCurrentIndex((i) => i + 1);
+    });
   }
 
   function handleLearned() {
-    onMarkLearned(card.id);
-    setFlipped(false);
-    if (safeIndex >= unlearnedCards.length - 1) {
-      setCurrentIndex(0);
-    }
+    if (animating) return;
+    setFlash("learned");
+    setTimeout(() => {
+      animateSlide("slide-up", () => {
+        setFlash(null);
+        onMarkLearned(card.id);
+        if (safeIndex >= unlearnedCards.length - 1) {
+          setCurrentIndex(0);
+        }
+      });
+    }, 300);
   }
 
   function handleNotLearned() {
-    onMarkNotLearned(card.id);
-    setFlipped(false);
-    next();
+    if (animating) return;
+    setFlash("not-learned");
+    setMarkedNotLearned((prev) => new Set(prev).add(card.id));
+    setTimeout(() => {
+      animateSlide("slide-left", () => {
+        setFlash(null);
+        onMarkNotLearned(card.id);
+        setCurrentIndex((i) => (i + 1 >= unlearnedCards.length ? 0 : i + 1));
+      });
+    }, 300);
   }
 
   const handleKeyDown = useCallback(
@@ -116,20 +150,20 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
       </div>
 
       <div className="card-nav-container">
-        <button className="btn nav-arrow" onClick={prev} aria-label="Previous card">&larr;</button>
-        <div className={`flashcard ${flipped ? "flipped" : ""}`} onClick={() => setFlipped(!flipped)}>
+        <button className="btn nav-arrow" onClick={prev} disabled={isFirst} aria-label="Previous card">&larr;</button>
+        <div className={`flashcard ${flipped ? "flipped" : ""} ${flash ? `flash-${flash}` : ""} ${slide || ""} ${!flash && markedNotLearned.has(card.id) ? "marked-not-learned" : ""}`} onClick={() => !animating && setFlipped(!flipped)}>
           <div className="flashcard-inner">
             <div className="flashcard-front">
-              <span className="card-label">Question</span>
+              <span className="card-label">Question {safeIndex + 1}/{unlearnedCards.length}</span>
               <p>{card.front}</p>
             </div>
             <div className="flashcard-back">
-              <span className="card-label">Answer</span>
+              <span className="card-label">Answer {safeIndex + 1}/{unlearnedCards.length}</span>
               <p>{card.back}</p>
             </div>
           </div>
         </div>
-        <button className="btn nav-arrow" onClick={next} aria-label="Next card">&rarr;</button>
+        <button className="btn nav-arrow" onClick={next} disabled={isLast} aria-label="Next card">&rarr;</button>
       </div>
 
       <p className="flip-hint">Click or press Space to flip</p>
