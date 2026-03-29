@@ -58,6 +58,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   function prev() {
     if (animating || isFirst) return;
+    setFlipped(false);
     animateSlide("slide-right", () => {
       setCurrentIndex((i) => i - 1);
     });
@@ -65,6 +66,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   function next() {
     if (animating || isLast) return;
+    setFlipped(false);
     animateSlide("slide-left", () => {
       setCurrentIndex((i) => i + 1);
     });
