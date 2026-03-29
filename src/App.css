@@ -409,6 +409,7 @@
 
 .flashcard-back {
   transform: rotateY(180deg);
+  overflow-y: auto;
 }
 
 .flashcard.flash-learned .flashcard-front,
@@ -473,14 +474,24 @@
   opacity: 0.6;
 }
 
-.flashcard-front p,
-.flashcard-back p {
+.flashcard-front p {
   font-size: 1.15rem;
   color: var(--text-h);
   text-align: center;
   margin: 0;
   line-height: 1.6;
   word-break: break-word;
+}
+
+.flashcard-back p {
+  font-size: 0.85rem;
+  color: var(--text-h);
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-y: auto;
+  max-height: 100%;
 }
 
 .flip-hint {
