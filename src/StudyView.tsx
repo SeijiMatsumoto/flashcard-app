@@ -102,6 +102,8 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
       switch (e.key) {
         case " ":
         case "Enter":
+        case "ArrowUp":
+        case "ArrowDown":
           e.preventDefault();
           setFlipped((f) => !f);
           break;
@@ -113,15 +115,13 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
           e.preventDefault();
           prev();
           break;
-        case "ArrowUp":
         case "1":
           e.preventDefault();
-          handleLearned();
+          handleNotLearned();
           break;
-        case "ArrowDown":
         case "2":
           e.preventDefault();
-          handleNotLearned();
+          handleLearned();
           break;
       }
     },
@@ -166,16 +166,16 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
         <button className="btn nav-arrow" onClick={next} disabled={isLast} aria-label="Next card">&rarr;</button>
       </div>
 
-      <p className="flip-hint">Click or press Space to flip</p>
+      <p className="flip-hint">Click or press ↑↓ / Space to flip</p>
 
       <div className="study-actions">
         <button className="btn not-learned" onClick={handleNotLearned}>
           Not Learned
-          <span className="shortcut-hint">↓ / 2</span>
+          <span className="shortcut-hint">1</span>
         </button>
         <button className="btn learned" onClick={handleLearned}>
           Learned
-          <span className="shortcut-hint">↑ / 1</span>
+          <span className="shortcut-hint">2</span>
         </button>
       </div>
 
