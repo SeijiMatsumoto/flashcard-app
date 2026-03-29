@@ -1,0 +1,362 @@
+.app {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.app > h1 {
+  text-align: center;
+  color: var(--text-h);
+  font-size: 2rem;
+  margin-bottom: 32px;
+}
+
+/* Buttons */
+.btn {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: white;
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+}
+.btn.primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn.learned {
+  background: var(--green);
+  color: white;
+  flex: 1;
+}
+.btn.learned:hover {
+  background: var(--green-hover);
+}
+
+.btn.not-learned {
+  background: var(--red);
+  color: white;
+  flex: 1;
+}
+.btn.not-learned:hover {
+  background: var(--red-hover);
+}
+
+.btn.skip {
+  background: var(--border);
+  color: var(--text-h);
+  flex: 0.6;
+}
+.btn.skip:hover {
+  opacity: 0.8;
+}
+
+.btn.back-btn {
+  background: transparent;
+  color: var(--accent);
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.btn.delete-btn {
+  background: transparent;
+  color: var(--red);
+  font-size: 0.85rem;
+  padding: 6px 12px;
+}
+.btn.delete-btn:hover {
+  background: rgba(252, 129, 129, 0.1);
+}
+
+.btn.reset-btn {
+  background: transparent;
+  color: var(--text);
+  font-size: 0.85rem;
+  margin-top: 16px;
+  text-decoration: underline;
+}
+
+/* Import View */
+.import-view {
+  margin-bottom: 40px;
+}
+
+.import-view h2 {
+  color: var(--text-h);
+  margin-bottom: 16px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.drop-zone:hover,
+.drop-zone.dragging {
+  border-color: var(--accent);
+  background: rgba(90, 103, 216, 0.05);
+}
+.drop-zone p {
+  color: var(--text);
+  margin: 0;
+}
+
+.or-divider {
+  text-align: center;
+  color: var(--text);
+  margin: 16px 0;
+  font-size: 0.9rem;
+}
+
+.import-view textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+  background: var(--card-bg);
+  color: var(--text-h);
+  margin-bottom: 12px;
+}
+.import-view textarea:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+.error {
+  color: var(--red-hover);
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.schema-hint {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.schema-hint summary {
+  cursor: pointer;
+}
+.schema-hint pre {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+/* Deck List */
+.deck-list {
+  margin-top: 8px;
+}
+.deck-list h2 {
+  color: var(--text-h);
+  margin-bottom: 16px;
+}
+
+.decks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deck-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.1s;
+  box-shadow: var(--shadow);
+}
+.deck-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+.deck-info {
+  text-align: left;
+}
+.deck-info h3 {
+  color: var(--text-h);
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+}
+.deck-desc {
+  font-size: 0.9rem;
+  margin: 0 0 8px;
+}
+.deck-stats {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin: 0;
+}
+
+.tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.tag {
+  background: rgba(90, 103, 216, 0.1);
+  color: var(--accent);
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* Study View */
+.study-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.study-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 24px;
+}
+.study-header h2 {
+  color: var(--text-h);
+  margin: 8px 0;
+}
+
+.progress {
+  font-size: 0.9rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Flashcard */
+.flashcard {
+  width: 100%;
+  max-width: 500px;
+  height: 300px;
+  perspective: 1000px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.flashcard-inner {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+.card-label {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.flashcard-front p,
+.flashcard-back p {
+  font-size: 1.15rem;
+  color: var(--text-h);
+  text-align: center;
+  margin: 0;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.flip-hint {
+  font-size: 0.8rem;
+  color: var(--text);
+  opacity: 0.5;
+  margin: 0 0 20px;
+}
+
+.study-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.remaining {
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.completed {
+  text-align: center;
+  margin-top: 60px;
+}
+.completed h2 {
+  color: var(--text-h);
+  font-size: 1.8rem;
+}
+.completed p {
+  margin-bottom: 24px;
+  color: var(--text);
+}
