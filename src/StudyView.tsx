@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { StoredFlashcardSet } from "./schema";
+import type { Card, StoredFlashcardSet } from "./schema";
 import EditCardModal from "./EditCardModal";
 
 interface Props {
@@ -23,27 +23,8 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   const totalCards = set.cards.length;
   const learnedCount = set.learnedCardIds.length;
 
-  if (unlearnedCards.length === 0) {
-    return (
-      <div className="study-view">
-        <button className="btn back-btn" onClick={onBack}>
-          &larr; Back
-        </button>
-        <div className="completed">
-          <h2>All cards learned!</h2>
-          <p>
-            You've completed all {totalCards} cards in "{set.title}".
-          </p>
-          <button className="btn primary" onClick={onReset}>
-            Reset Deck
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const safeIndex = currentIndex >= unlearnedCards.length ? 0 : currentIndex;
-  const card = unlearnedCards[safeIndex];
+  const card: Card | undefined = unlearnedCards[safeIndex];
 
   const animating = slide !== null || flash !== null;
 
@@ -76,7 +57,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   }
 
   function handleLearned() {
-    if (animating) return;
+    if (animating || !card) return;
     setFlipped(false);
     setFlash("learned");
     setTimeout(() => {
@@ -91,7 +72,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   }
 
   function handleNotLearned() {
-    if (animating) return;
+    if (animating || !card) return;
     setFlipped(false);
     setFlash("not-learned");
     setMarkedNotLearned((prev) => new Set(prev).add(card.id));
@@ -106,7 +87,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (editing) return;
+      if (editing || !card) return;
       switch (e.key) {
         case " ":
         case "Enter":
@@ -147,6 +128,25 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  if (!card) {
+    return (
+      <div className="study-view">
+        <button className="btn back-btn" onClick={onBack}>
+          &larr; Back
+        </button>
+        <div className="completed">
+          <h2>All cards learned!</h2>
+          <p>
+            You've completed all {totalCards} cards in "{set.title}".
+          </p>
+          <button className="btn primary" onClick={onReset}>
+            Reset Deck
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="study-view">
@@ -212,7 +212,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
       <div className="study-actions">
         <button className="btn not-learned" onClick={handleNotLearned}>
-          Not Learned
+          Revisit
           <span className="shortcut-hint">1</span>
         </button>
         <button className="btn learned" onClick={handleLearned}>

@@ -4,7 +4,7 @@
 }
 
 .app.study-mode {
-  max-width: 700px;
+  max-width: 960px;
 }
 
 .home-header {
@@ -344,7 +344,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  max-width: 600px;
+  max-width: 900px;
   margin-bottom: 12px;
 }
 
@@ -372,8 +372,8 @@
 .flashcard {
   flex: 1;
   min-width: 0;
-  height: 300px;
-  perspective: 1000px;
+  height: clamp(320px, 60vh, 560px);
+  perspective: 2000px;
   cursor: pointer;
 }
 
@@ -399,7 +399,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 32px;
+  padding: 48px 40px;
   border-radius: 16px;
   background: var(--card-bg);
   border: 2px solid var(--border);
@@ -475,7 +475,7 @@
 }
 
 .flashcard-front p {
-  font-size: 1.15rem;
+  font-size: 1.6rem;
   color: var(--text-h);
   text-align: center;
   margin: 0;
@@ -484,11 +484,11 @@
 }
 
 .flashcard-back p {
-  font-size: 0.85rem;
+  font-size: 1.15rem;
   color: var(--text-h);
   text-align: center;
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.6;
   word-break: break-word;
   overflow-y: auto;
   max-height: 100%;

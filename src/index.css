@@ -53,3 +53,7 @@ body {
   margin: 0 auto;
   padding: 24px 16px;
 }
+
+#root:has(.study-mode) {
+  max-width: 960px;
+}
