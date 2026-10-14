@@ -4,10 +4,11 @@ interface Props {
   sets: StoredFlashcardSet[];
   onSelect: (index: number) => void;
   onDelete: (index: number) => void;
+  onEdit: (index: number) => void;
   onImport: () => void;
 }
 
-export default function DeckList({ sets, onSelect, onDelete, onImport }: Props) {
+export default function DeckList({ sets, onSelect, onDelete, onEdit, onImport }: Props) {
   if (sets.length === 0) {
     return (
       <div className="empty-state">
@@ -45,15 +46,26 @@ export default function DeckList({ sets, onSelect, onDelete, onImport }: Props) 
                   {learned}/{total} learned ({pct}%)
                 </p>
               </div>
-              <button
-                className="btn delete-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(i);
-                }}
-              >
-                Delete
-              </button>
+              <div className="deck-card-actions">
+                <button
+                  className="btn edit-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(i);
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  className="btn delete-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(i);
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           );
         })}

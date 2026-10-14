@@ -94,3 +94,16 @@ export function updateCard(setIndex: number, cardId: string, changes: { front: s
   saveSets(sets);
   return sets;
 }
+
+export function updateDeck(setIndex: number, changes: Pick<FlashcardSet, "title" | "description" | "cards">): StoredFlashcardSet[] {
+  const sets = loadSets();
+  const set = sets[setIndex];
+  set.title = changes.title;
+  set.description = changes.description;
+  set.cards = changes.cards;
+  // Drop progress for cards that no longer exist
+  const ids = new Set(changes.cards.map((c) => c.id));
+  set.learnedCardIds = set.learnedCardIds.filter((id) => ids.has(id));
+  saveSets(sets);
+  return sets;
+}

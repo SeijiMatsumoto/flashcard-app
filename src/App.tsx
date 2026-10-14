@@ -1,32 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FlashcardSetSchema } from "./schema";
 import type { StoredFlashcardSet } from "./schema";
-import { loadSets, addSet, deleteSet, markCardLearned, markCardNotLearned, resetDeck, updateCard } from "./storage";
+import { loadSets, addSet, deleteSet, markCardLearned, markCardNotLearned, resetDeck, updateCard, updateDeck } from "./storage";
 import ImportView from "./ImportView";
 import DeckList from "./DeckList";
 import StudyView from "./StudyView";
+import DeckEditor from "./DeckEditor";
 import "./App.css";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-function getDeckIdFromUrl(): string | null {
-  const path = window.location.pathname.replace(BASE, "").replace(/^\//, "");
-  return path || null;
+interface Route {
+  deckId: string | null;
+  editing: boolean;
+}
+
+// URLs: /<deckId> to study, /<deckId>/edit to edit the deck
+function getRouteFromUrl(): Route {
+  const [deckId, sub] = window.location.pathname.replace(BASE, "").replace(/^\//, "").split("/");
+  return { deckId: deckId || null, editing: !!deckId && sub === "edit" };
 }
 
 export default function App() {
   const [sets, setSets] = useState<StoredFlashcardSet[]>(loadSets);
-  const [activeDeckId, setActiveDeckId] = useState<string | null>(getDeckIdFromUrl);
+  const [route, setRoute] = useState<Route>(getRouteFromUrl);
   const [showImport, setShowImport] = useState(false);
+  // Where the deck editor returns to on save/cancel
+  const editorReturnsToListRef = useRef(false);
+  const activeDeckId = route.deckId;
 
-  const navigateTo = useCallback((deckId: string | null) => {
-    setActiveDeckId(deckId);
-    const url = deckId ? `${BASE}/${deckId}` : `${BASE}/`;
+  const navigateTo = useCallback((deckId: string | null, editing = false) => {
+    setRoute({ deckId, editing });
+    const url = deckId ? `${BASE}/${deckId}${editing ? "/edit" : ""}` : `${BASE}/`;
     window.history.pushState(null, "", url);
   }, []);
 
+  function openEditor(deckId: string, fromList: boolean) {
+    editorReturnsToListRef.current = fromList;
+    navigateTo(deckId, true);
+  }
+
+  function closeEditor() {
+    navigateTo(editorReturnsToListRef.current ? null : activeDeckId);
+    editorReturnsToListRef.current = false;
+  }
+
   useEffect(() => {
-    const onPopState = () => setActiveDeckId(getDeckIdFromUrl());
+    const onPopState = () => setRoute(getRouteFromUrl());
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
@@ -83,6 +103,20 @@ export default function App() {
     setSets(updated);
   }
 
+  function handleSaveDeck(changes: Parameters<typeof updateDeck>[1]) {
+    if (studyingIndex < 0) return;
+    setSets(updateDeck(studyingIndex, changes));
+    closeEditor();
+  }
+
+  if (studyingSet && route.editing) {
+    return (
+      <div className="app study-mode">
+        <DeckEditor key={studyingSet.id} set={studyingSet} onSave={handleSaveDeck} onCancel={closeEditor} />
+      </div>
+    );
+  }
+
   if (studyingSet) {
     return (
       <div className="app study-mode">
@@ -92,6 +126,7 @@ export default function App() {
           onMarkNotLearned={handleMarkNotLearned}
           onReset={handleReset}
           onEditCard={handleEditCard}
+          onEditDeck={() => openEditor(studyingSet.id, false)}
           onBack={() => navigateTo(null)}
         />
       </div>
@@ -106,7 +141,7 @@ export default function App() {
           + Import Deck
         </button>
       </div>
-      <DeckList sets={sets} onSelect={(i) => navigateTo(sets[i].id)} onDelete={handleDelete} onImport={() => setShowImport(true)} />
+      <DeckList sets={sets} onSelect={(i) => navigateTo(sets[i].id)} onDelete={handleDelete} onEdit={(i) => openEditor(sets[i].id, true)} onImport={() => setShowImport(true)} />
 
       <footer className="app-footer">
         Data is stored in your browser's local storage. It won't sync across devices or persist if you clear your browser data.

@@ -27,12 +27,18 @@ interface Props {
   onMarkNotLearned: (cardId: string) => void;
   onReset: () => void;
   onEditCard: (cardId: string, changes: { front: string; back: string }) => void;
+  onEditDeck: () => void;
   onBack: () => void;
 }
 
-export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onReset, onEditCard, onBack }: Props) {
+export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onReset, onEditCard, onEditDeck, onBack }: Props) {
   const unlearnedCards = set.cards.filter((c) => !set.learnedCardIds.includes(c.id));
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // Restore position from ?card=<id> so a refresh keeps your place
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const cardId = new URLSearchParams(window.location.search).get("card");
+    const i = unlearnedCards.findIndex((c) => c.id === cardId);
+    return i >= 0 ? i : 0;
+  });
   const [flipped, setFlipped] = useState(false);
   const [flash, setFlash] = useState<"learned" | "not-learned" | null>(null);
   const [slide, setSlide] = useState<"slide-left" | "slide-right" | "slide-up" | null>(null);
@@ -82,6 +88,15 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
     saveAutoRead(on);
     if (!on) stopSpeaking();
   }
+
+  // Keep ?card=<id> in sync with the visible card
+  const cardId = card?.id;
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (cardId) url.searchParams.set("card", cardId);
+    else url.searchParams.delete("card");
+    if (url.href !== window.location.href) window.history.replaceState(window.history.state, "", url);
+  }, [cardId]);
 
   // Stop any speech when the card or side changes, and on unmount
   useEffect(() => {
@@ -248,9 +263,14 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   if (!card) {
     return (
       <div className="study-view">
-        <button className="btn back-btn" onClick={onBack}>
-          &larr; Back
-        </button>
+        <div className="study-topbar">
+          <button className="btn back-btn" onClick={onBack}>
+            &larr; Back
+          </button>
+          <button className="btn edit-deck-btn" onClick={onEditDeck}>
+            Edit deck
+          </button>
+        </div>
         <div className="completed">
           <h2>All cards learned!</h2>
           <p>
@@ -267,9 +287,14 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   return (
     <div className="study-view">
       <div className="study-header">
-        <button className="btn back-btn" onClick={onBack}>
-          &larr; Back
-        </button>
+        <div className="study-topbar">
+          <button className="btn back-btn" onClick={onBack}>
+            &larr; Back
+          </button>
+          <button className="btn edit-deck-btn" onClick={onEditDeck}>
+            Edit deck
+          </button>
+        </div>
         <h2>{set.title}</h2>
         <div className="progress">
           {learnedCount} / {totalCards} learned
