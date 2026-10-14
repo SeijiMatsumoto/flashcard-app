@@ -83,3 +83,14 @@ export function resetDeck(setIndex: number): StoredFlashcardSet[] {
   saveSets(sets);
   return sets;
 }
+
+export function updateCard(setIndex: number, cardId: string, changes: { front: string; back: string }): StoredFlashcardSet[] {
+  const sets = loadSets();
+  const card = sets[setIndex].cards.find((c) => c.id === cardId);
+  if (card) {
+    card.front = changes.front;
+    card.back = changes.back;
+  }
+  saveSets(sets);
+  return sets;
+}

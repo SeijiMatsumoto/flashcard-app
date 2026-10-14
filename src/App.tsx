@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlashcardSetSchema } from "./schema";
 import type { StoredFlashcardSet } from "./schema";
-import { loadSets, addSet, deleteSet, markCardLearned, markCardNotLearned, resetDeck } from "./storage";
+import { loadSets, addSet, deleteSet, markCardLearned, markCardNotLearned, resetDeck, updateCard } from "./storage";
 import ImportView from "./ImportView";
 import DeckList from "./DeckList";
 import StudyView from "./StudyView";
@@ -77,6 +77,12 @@ export default function App() {
     setSets(updated);
   }
 
+  function handleEditCard(cardId: string, changes: { front: string; back: string }) {
+    if (studyingIndex < 0) return;
+    const updated = updateCard(studyingIndex, cardId, changes);
+    setSets(updated);
+  }
+
   if (studyingSet) {
     return (
       <div className="app study-mode">
@@ -85,6 +91,7 @@ export default function App() {
           onMarkLearned={handleMarkLearned}
           onMarkNotLearned={handleMarkNotLearned}
           onReset={handleReset}
+          onEditCard={handleEditCard}
           onBack={() => navigateTo(null)}
         />
       </div>

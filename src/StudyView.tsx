@@ -1,21 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import type { StoredFlashcardSet } from "./schema";
+import EditCardModal from "./EditCardModal";
 
 interface Props {
   set: StoredFlashcardSet;
   onMarkLearned: (cardId: string) => void;
   onMarkNotLearned: (cardId: string) => void;
   onReset: () => void;
+  onEditCard: (cardId: string, changes: { front: string; back: string }) => void;
   onBack: () => void;
 }
 
-export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onReset, onBack }: Props) {
+export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onReset, onEditCard, onBack }: Props) {
   const unlearnedCards = set.cards.filter((c) => !set.learnedCardIds.includes(c.id));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [flash, setFlash] = useState<"learned" | "not-learned" | null>(null);
   const [slide, setSlide] = useState<"slide-left" | "slide-right" | "slide-up" | null>(null);
   const [markedNotLearned, setMarkedNotLearned] = useState<Set<string>>(new Set());
+  const [editing, setEditing] = useState(false);
 
   const totalCards = set.cards.length;
   const learnedCount = set.learnedCardIds.length;
@@ -103,6 +106,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (editing) return;
       switch (e.key) {
         case " ":
         case "Enter":
@@ -127,10 +131,16 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
           e.preventDefault();
           handleLearned();
           break;
+        case "e":
+        case "E":
+          if (e.metaKey || e.ctrlKey || e.altKey || animating) break;
+          e.preventDefault();
+          setEditing(true);
+          break;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [unlearnedCards.length, safeIndex, card?.id],
+    [unlearnedCards.length, safeIndex, card?.id, editing, animating],
   );
 
   useEffect(() => {
@@ -159,10 +169,38 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
           <div className="flashcard-inner">
             <div className="flashcard-front">
               <span className="card-label">Question {safeIndex + 1}/{unlearnedCards.length}</span>
+              <button
+                className="btn edit-card-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!animating) setEditing(true);
+                }}
+                aria-label="Edit card"
+                title="Edit card (E)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
               <p>{card.front}</p>
             </div>
             <div className="flashcard-back">
               <span className="card-label">Answer {safeIndex + 1}/{unlearnedCards.length}</span>
+              <button
+                className="btn edit-card-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!animating) setEditing(true);
+                }}
+                aria-label="Edit card"
+                title="Edit card (E)"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+              </button>
               <p>{card.back}</p>
             </div>
           </div>
@@ -184,7 +222,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
       </div>
 
       <div className="nav-hint">
-        ← Previous &middot; → Next
+        ← Previous &middot; → Next &middot; E Edit
       </div>
 
       <div className="remaining">
@@ -194,6 +232,17 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
       <button className="btn reset-btn" onClick={onReset}>
         Reset Deck
       </button>
+
+      {editing && (
+        <EditCardModal
+          card={card}
+          onSave={(changes) => {
+            onEditCard(card.id, changes);
+            setEditing(false);
+          }}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </div>
   );
 }
