@@ -1,6 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Card, StoredFlashcardSet } from "./schema";
 import EditCardModal from "./EditCardModal";
+
+const canSpeak = typeof window !== "undefined" && "speechSynthesis" in window;
+const AUTO_READ_KEY = "flashcard-app-auto-read";
+
+function loadAutoRead(): boolean {
+  try {
+    return localStorage.getItem(AUTO_READ_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function saveAutoRead(on: boolean) {
+  try {
+    localStorage.setItem(AUTO_READ_KEY, on ? "1" : "0");
+  } catch {
+    // Preference just won't persist
+  }
+}
 
 interface Props {
   set: StoredFlashcardSet;
@@ -19,6 +38,9 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   const [slide, setSlide] = useState<"slide-left" | "slide-right" | "slide-up" | null>(null);
   const [markedNotLearned, setMarkedNotLearned] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState(false);
+  const [autoRead, setAutoRead] = useState(loadAutoRead);
+  const [speaking, setSpeaking] = useState(false);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const totalCards = set.cards.length;
   const learnedCount = set.learnedCardIds.length;
@@ -28,6 +50,51 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
   const card: Card | undefined = unlearnedCards[safeIndex];
 
   const animating = slide !== null || flash !== null;
+  const sideText = card ? (flipped ? card.back : card.front) : "";
+
+  const speak = useCallback((text: string) => {
+    if (!canSpeak || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.onstart = () => setSpeaking(true);
+    u.onend = u.onerror = () => {
+      if (utteranceRef.current === u) setSpeaking(false);
+    };
+    utteranceRef.current = u;
+    window.speechSynthesis.speak(u);
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    if (!canSpeak) return;
+    utteranceRef.current = null;
+    window.speechSynthesis.cancel();
+    setSpeaking(false);
+  }, []);
+
+  function toggleSpeak() {
+    if (speaking) stopSpeaking();
+    else speak(sideText);
+  }
+
+  function toggleAutoRead() {
+    const on = !autoRead;
+    setAutoRead(on);
+    saveAutoRead(on);
+    if (!on) stopSpeaking();
+  }
+
+  // Stop any speech when the card or side changes, and on unmount
+  useEffect(() => {
+    return () => {
+      if (canSpeak) window.speechSynthesis.cancel();
+    };
+  }, [card?.id, flipped]);
+
+  // Auto-read: speak the visible side once it settles
+  useEffect(() => {
+    if (!autoRead || animating || editing || !sideText) return;
+    speak(sideText);
+  }, [autoRead, animating, editing, sideText, card?.id, flipped, speak]);
 
   function animateSlide(direction: "slide-left" | "slide-right" | "slide-up", then: () => void) {
     setSlide(direction);
@@ -119,16 +186,64 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
           e.preventDefault();
           setEditing(true);
           break;
+        case "s":
+        case "S":
+          if (!canSpeak || e.metaKey || e.ctrlKey || e.altKey) break;
+          e.preventDefault();
+          toggleSpeak();
+          break;
+        case "a":
+        case "A":
+          if (!canSpeak || e.metaKey || e.ctrlKey || e.altKey) break;
+          e.preventDefault();
+          toggleAutoRead();
+          break;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [unlearnedCards.length, safeIndex, card?.id, editing, animating],
+    [unlearnedCards.length, safeIndex, card?.id, editing, animating, sideText, speaking, autoRead],
   );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
+
+  const cardTools = (
+    <div className="card-tools">
+      {canSpeak && (
+        <button
+          className={`btn card-tool-btn ${speaking ? "active" : ""}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleSpeak();
+          }}
+          aria-label={speaking ? "Stop reading" : "Read aloud"}
+          title={speaking ? "Stop reading (S)" : "Read aloud (S)"}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+          </svg>
+        </button>
+      )}
+      <button
+        className="btn card-tool-btn"
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!animating) setEditing(true);
+        }}
+        aria-label="Edit card"
+        title="Edit card (E)"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      </button>
+    </div>
+  );
 
   if (!card) {
     return (
@@ -170,38 +285,12 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
           <div className="flashcard-inner">
             <div className="flashcard-front">
               <span className="card-label">Question {safeIndex + 1}/{unlearnedCards.length}</span>
-              <button
-                className="btn edit-card-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!animating) setEditing(true);
-                }}
-                aria-label="Edit card"
-                title="Edit card (E)"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </button>
+              {cardTools}
               <p>{card.front}</p>
             </div>
             <div className="flashcard-back">
               <span className="card-label">Answer {safeIndex + 1}/{unlearnedCards.length}</span>
-              <button
-                className="btn edit-card-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!animating) setEditing(true);
-                }}
-                aria-label="Edit card"
-                title="Edit card (E)"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 20h9" />
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-                </svg>
-              </button>
+              {cardTools}
               {card.back ? <p>{card.back}</p> : <p className="empty-back">No answer yet &middot; press E to add one</p>}
             </div>
           </div>
@@ -220,12 +309,27 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
         </button>
       </div>
 
+      {canSpeak && (
+        <button className={`auto-read-toggle ${autoRead ? "on" : ""}`} role="switch" aria-checked={autoRead} onClick={toggleAutoRead}>
+          <span className="switch-track" aria-hidden="true">
+            <span className="switch-thumb" />
+          </span>
+          Auto-read aloud
+        </button>
+      )}
+
       <div className="shortcut-legend">
         <span><kbd>Space</kbd> Flip</span>
         <span><kbd>←</kbd><kbd>→</kbd> Prev / Next</span>
         <span><kbd>1</kbd> Revisit</span>
         <span><kbd>2</kbd> Learned</span>
         <span><kbd>E</kbd> Edit</span>
+        {canSpeak && (
+          <>
+            <span><kbd>S</kbd> Speak</span>
+            <span><kbd>A</kbd> Auto-read</span>
+          </>
+        )}
       </div>
 
       <div className="remaining">

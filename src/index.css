@@ -39,6 +39,23 @@
   }
 }
 
+/* Default the UI to ~150% on large screens (matches browser zoom at 150%).
+   CSS zoom also scales vh units, so vh-based sizes divide by --zoom. */
+html {
+  --zoom: 1;
+  zoom: var(--zoom);
+}
+@media (min-width: 900px) {
+  html {
+    --zoom: 1.25;
+  }
+}
+@media (min-width: 1200px) {
+  html {
+    --zoom: 1.5;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
