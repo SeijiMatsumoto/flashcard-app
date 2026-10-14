@@ -12,7 +12,7 @@ export default function EditCardModal({ card, onSave, onClose }: Props) {
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
 
-  const canSave = front.trim() !== "" && back.trim() !== "";
+  const canSave = front.trim() !== "";
 
   function handleSave() {
     if (!canSave) return;

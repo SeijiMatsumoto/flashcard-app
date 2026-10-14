@@ -22,6 +22,7 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
 
   const totalCards = set.cards.length;
   const learnedCount = set.learnedCardIds.length;
+  const revisitCount = unlearnedCards.filter((c) => markedNotLearned.has(c.id)).length;
 
   const safeIndex = currentIndex >= unlearnedCards.length ? 0 : currentIndex;
   const card: Card | undefined = unlearnedCards[safeIndex];
@@ -201,28 +202,30 @@ export default function StudyView({ set, onMarkLearned, onMarkNotLearned, onRese
                   <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
               </button>
-              <p>{card.back}</p>
+              {card.back ? <p>{card.back}</p> : <p className="empty-back">No answer yet &middot; press E to add one</p>}
             </div>
           </div>
         </div>
         <button className="btn nav-arrow" onClick={next} disabled={isLast} aria-label="Next card">&rarr;</button>
       </div>
 
-      <p className="flip-hint">Click or press ↑↓ / Space to flip</p>
-
       <div className="study-actions">
         <button className="btn not-learned" onClick={handleNotLearned}>
           Revisit
-          <span className="shortcut-hint">1</span>
+          <span className="action-count" aria-label={`${revisitCount} to revisit`}>{revisitCount}</span>
         </button>
         <button className="btn learned" onClick={handleLearned}>
           Learned
-          <span className="shortcut-hint">2</span>
+          <span className="action-count" aria-label={`${learnedCount} learned`}>{learnedCount}</span>
         </button>
       </div>
 
-      <div className="nav-hint">
-        ← Previous &middot; → Next &middot; E Edit
+      <div className="shortcut-legend">
+        <span><kbd>Space</kbd> Flip</span>
+        <span><kbd>←</kbd><kbd>→</kbd> Prev / Next</span>
+        <span><kbd>1</kbd> Revisit</span>
+        <span><kbd>2</kbd> Learned</span>
+        <span><kbd>E</kbd> Edit</span>
       </div>
 
       <div className="remaining">

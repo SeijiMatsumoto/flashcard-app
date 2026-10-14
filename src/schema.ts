@@ -3,7 +3,7 @@ import { z } from "zod";
 export const CardSchema = z.object({
   id: z.string().min(1),
   front: z.string().min(1),
-  back: z.string().min(1),
+  back: z.string().default(""),
 });
 
 export const FlashcardSetSchema = z.object({
